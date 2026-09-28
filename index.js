@@ -3,16 +3,27 @@ import bodyParser from "body-parser";
 import pg from "pg";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "postgres",
-  password: "1234",
-  port:5432,
-});
-db.connect();
+const db = new pg.Client(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }
+    : {
+        user: "postgres",
+        host: "localhost",
+        database: "postgres",
+        password: process.env.LOCAL_DB_PASSWORD,
+        port: 5432,
+      }
+);
+
+await db.connect();
+console.log("Connected to PostgreSQL successfully!");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
